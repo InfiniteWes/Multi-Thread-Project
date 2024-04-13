@@ -17,6 +17,7 @@ def read_matrix(file_name):
     with open(file_name, 'r') as file:
         for line in file:
             matrix.append([str(x) for x in line.split()])
+    # print(matrix)
     return matrix
 
 def write_matrix(file_name, matrix):
