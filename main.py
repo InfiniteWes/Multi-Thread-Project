@@ -1,9 +1,7 @@
 import argparse
-import multiprocessing
+import multiprocessing as mp
 
-n = None
-
-# Function to parse command line arguments
+# Parse command line arguments
 def parse_args():
     parser = argparse.ArgumentParser(description="Execute cellular life simulator over 100 time steps.")
     parser.add_argument('-i', '--input', type=str, help='Input file name', required=True)
@@ -11,34 +9,35 @@ def parse_args():
     parser.add_argument('-p', '--processes', type=int, help='Number of processes to use', required=False, default=1)
     return parser.parse_args()
 
-# Function to read matrix from file
-def read_matrix(file_name, matrix):
+# Read matrix from file
+def read_matrix(file_name):
+    matrix = []
     with open(file_name, 'r') as file:
         for line in file:
             row = list(line.strip())
             matrix.append(row)
     return matrix
 
-# Function to write matrix to file
+# Write matrix to file
 def write_matrix(file_name, matrix):
     with open(file_name, 'w') as file:
         for row in matrix:
             file.write(''.join(row) + '\n')
 
-# Function to get all neighbor positions using precomputed x and y adjustments
-def get_neighbors(x, y):
+# Get all neighbor positions using precomputed x and y adjustments
+def get_neighbors(x, y, n):
     xm1, xp1 = (x-1) % n, (x+1) % n
     ym1, yp1 = (y-1) % n, (y+1) % n
     return [(xm1, ym1), (xm1, y), (xm1, yp1),
             (x, ym1), (x, yp1),
             (xp1, ym1), (xp1, y), (xp1, yp1)]
 
-# Function to get neighbor count
-def get_neighbor_count(matrix, x, y):
-    neighbors = get_neighbors(x, y)
+# Get neighbor count
+def get_neighbor_count(matrix, x, y, n):
+    neighbors = get_neighbors(x, y, n)
     return sum(1 for i, j in neighbors if matrix[i][j] == 'O')
 
-# Function to check if number is prime
+# Check if number is prime
 def is_prime(num):
     if num < 2:
         return False
@@ -47,39 +46,46 @@ def is_prime(num):
             return False
     return True
 
-# Function to update cell
-def update_cell(matrix, x, y):
+# Update cell
+def update_cell(matrix, x, y, n):
     alive = matrix[x][y] == 'O'
-    neighbors = get_neighbor_count(matrix, x, y)
+    neighbors = get_neighbor_count(matrix, x, y, n)
     valid_neighbors = {2, 4, 6, 8}
     if alive:
         return 'O' if is_prime(neighbors) else '.'
     else:
         return 'O' if neighbors in valid_neighbors else '.'
 
-# Function to process generation for rules
-def process_generation(current_matrix):
-    n = len(current_matrix)
-    new_matrix = [[None]*n for _ in range(n)]
-    for i in range(n):
-        for j in range(n):
-            new_matrix[i][j] = update_cell(current_matrix, i, j)
+# Process rows in parallel
+def process_rows(args):
+    matrix, row_index, n = args
+    new_row = [update_cell(matrix, row_index, j, n) for j in range(len(matrix[0]))]
+    return new_row
+
+# Process generation
+def process_generation(matrix, num_processes):
+    n = len(matrix)
+    if n == 0:
+        raise ValueError("Input matrix is empty and cannot be processed.")
+    with mp.Pool(num_processes) as pool:
+        args_list = [(matrix, i, n) for i in range(n)]
+        new_matrix = pool.map(process_rows, args_list)
     return new_matrix
 
-# Function to simulate 100 steps
-def simulate(matrix):
+
+# Simulate 100 steps
+def simulate(matrix, num_processes):
     for _ in range(100):
-        matrix = process_generation(matrix)
+        matrix = process_generation(matrix, num_processes)
     return matrix
 
-# Main function
 def main():
-    print("Project:: Cellular Life Simulator R#11736897\n")
     args = parse_args()
-    global n
     input_matrix = read_matrix(args.input)
     n = len(input_matrix)
-    final_matrix = simulate(input_matrix, 100)
+
+    # Simulate and write the final matrix using multiprocessing
+    final_matrix = simulate(input_matrix, args.processes)
     write_matrix(args.output, final_matrix)
 
 if __name__ == "__main__":
