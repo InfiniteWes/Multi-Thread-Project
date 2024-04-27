@@ -109,6 +109,7 @@ def simulate(matrix, num_processes):
         process_generation(num_processes, n)
     return shared_memory(n)
 
+# Main function
 def main():
     args = parse_args()
     input_matrix = read_matrix(args.input)
