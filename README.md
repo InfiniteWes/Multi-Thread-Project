@@ -5,6 +5,7 @@ The program must then simulate the next 100 time-steps based on the algorithm di
 The simulation is guided by a handful of simplistic rules that will result in a seemingly complex simulation of cellular organisms. 
 
 ### Command Line Arguments
+```
 Develop a program capable of accepting the following command line arguments:
 • -i <path_to_input_file> 
       o Purpose: This option retrieves the file path to the starting cellular matrix.
@@ -23,6 +24,6 @@ Develop a program capable of accepting the following command line arguments:
       o Validation: Must be a positive integer > 0, otherwise error.
       o Required: No
       o Default Value: 1 
-
+```
 ### Authors
 [Wesley Spangler](https://github.com/InfiniteWes)
