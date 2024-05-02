@@ -18,6 +18,7 @@ Develop a program capable of accepting the following command line arguments:
       o Input Type: String 
       o Validation: The directories in the file path must exist, otherwise error.
       o Required: Yes
+
 • -p <int> 
       o Purpose: This option retrieves the number of processes to spawn.
       o Input Type: Unsigned Integer
